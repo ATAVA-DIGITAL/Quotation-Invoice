@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Invoice & Quotation Generator</title>
+    <!-- ⚡ മൊബൈലിൽ സിമ്പിൾ ആയി PDF ഡൗൺലോഡ് ചെയ്യാൻ വേണ്ടിയുള്ള ലൈബ്രറി -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         :root {
             --primary-color: #2563eb; 
@@ -39,15 +42,11 @@
             text-align: center;
             padding: 10px 0 20px 0;
             color: white;
+            /* ⚡ ചെറിയൊരു അനിമേഷൻ എഫക്ട് */
+            animation: fadeInDown 0.8s ease-out;
         }
 
-        header h1 {
-            font-size: 36px;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Form Styling */
+        /* ⚡ ഫോമിനും പ്രിവ്യൂവിനും ഉള്ള അടിപൊളി അനിമേഷൻ */
         .form-section {
             background: rgba(255, 255, 255, 0.98);
             padding: 30px;
@@ -55,6 +54,28 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             max-height: 90vh;
             overflow-y: auto;
+            animation: fadeInLeft 0.8s ease-out;
+        }
+
+        .preview-section {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            animation: fadeInRight 0.8s ease-out;
+        }
+
+        /* Animations Keyframes */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .form-section h2 {
@@ -84,6 +105,7 @@
             border-radius: 8px;
             font-size: 14px;
             background-color: #f8fafc;
+            transition: all 0.3s ease;
         }
 
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
@@ -123,7 +145,10 @@
             cursor: pointer;
             font-weight: bold;
             margin-top: 10px;
+            transition: background 0.3s;
         }
+        .btn-add-row:hover { background: #1d4ed8; }
+        
         .btn-delete-row {
             background-color: #ef4444;
             color: white;
@@ -133,19 +158,12 @@
             cursor: pointer;
         }
 
-        /* Preview Styling */
-        .preview-section {
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-
         .receipt-box {
             background: #fff;
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            min-height: 842px; /* A4 Ratio Approximate */
+            min-height: 842px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -162,7 +180,7 @@
         }
 
         .biz-details h3 {
-            font-size: 26px;
+            font-size: 24px;
             color: #1e3a8a;
             text-transform: uppercase;
             font-weight: 800;
@@ -175,12 +193,16 @@
             text-transform: uppercase;
         }
 
-        .doc-title-box {
+        /* ⚡ ലോഗോയും ടൈറ്റിലും വലതുവശത്ത് കൃത്യമായി വരാൻ */
+        .doc-header-right {
             text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
         }
 
         .doc-title-box h2 {
-            font-size: 28px;
+            font-size: 26px;
             color: var(--primary-color);
             font-weight: 800;
             letter-spacing: 1px;
@@ -190,7 +212,7 @@
             max-width: 120px;
             max-height: 80px;
             object-fit: contain;
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         /* Info Grid (Dates & Client) */
@@ -242,7 +264,7 @@
             text-transform: uppercase;
         }
 
-        /* Financial Summary Box */
+        /* Financial Summary Box Fixes */
         .summary-wrapper {
             display: flex;
             justify-content: space-between;
@@ -270,15 +292,19 @@
             width: 40%;
         }
 
-        .calc-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            font-size: 13px;
-            border-bottom: 1px dashed #e2e8f0;
+        /* ⚡ ഇവിടെ ടേബിൾ ആക്കിയതുകൊണ്ട് Subtotal / Grandtotal എല്ലാം കൃത്യമായി കാണാം */
+        .calc-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .calc-row.grand-total-row {
+        .calc-table td {
+            padding: 6px 0;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .calc-table tr.grand-total-row td {
             border-top: 2px solid var(--primary-color);
             border-bottom: 3px double var(--primary-color);
             font-weight: bold;
@@ -323,37 +349,59 @@
             margin-top: 25px;
             display: flex;
             justify-content: flex-end;
-            gap: 15px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .btn-print {
             background: #10b981;
             color: white;
             border: none;
-            padding: 14px 25px;
-            font-size: 16px;
+            padding: 14px 22px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2);
+            transition: all 0.3s;
         }
 
         .btn-whatsapp {
             background: #25D366;
             color: white;
             border: none;
-            padding: 14px 25px;
-            font-size: 16px;
+            padding: 14px 22px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+            box-shadow: 0 8px 15px rgba(37, 211, 102, 0.2);
+            transition: all 0.3s;
+        }
+
+        /* ⚡ പുതിയ PDF ഡൗൺലോഡ് ബട്ടൺ സ്റ്റൈൽ */
+        .btn-pdf {
+            background: #e11d48;
+            color: white;
+            border: none;
+            padding: 14px 22px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(225, 29, 72, 0.2);
+            transition: all 0.3s;
+        }
+
+        .btn-print:hover, .btn-whatsapp:hover, .btn-pdf:hover {
+            transform: translateY(-2px);
         }
 
         @media (max-width: 1000px) {
             .container { grid-template-columns: 1fr; }
             header { grid-column: span 1; }
             .actions { flex-direction: column; }
+            .btn-print, .btn-whatsapp, .btn-pdf { width: 100%; text-align: center; }
         }
 
         /* PRINT STYLES */
@@ -373,7 +421,7 @@
     <div class="container">
         <header>
             <h1>Invoice & Quotation Generator</h1>
-            <p>Generate Professional Estimates and Bills Instanty</p>
+            <p>Generate Professional Estimates and Bills Instantly</p>
         </header>
 
         <!-- Left Side: Interactive Controls -->
@@ -383,7 +431,7 @@
             <div class="form-group">
                 <label for="docType">Choose Document Type</label>
                 <select id="docType" onchange="toggleDocType()">
-                    <option value="Quotation">PRICE QUOTATION</option>
+                    <option value="Quotation">QUOTATION</option>
                     <option value="Invoice">INVOICE</option>
                 </select>
             </div>
@@ -531,12 +579,15 @@
                             <p id="viewBizAddress" style="white-space: pre-line; margin-bottom: 5px;"></p>
                             <p id="viewBizContact">Contact: ------</p>
                             <p id="viewBizTax" style="font-weight: bold; color: #1e3a8a;"></p>
+                        </div>
+                        <!-- ⚡ ടൈറ്റിലും ലോഗോയും വലതുഭാഗത്തേക്ക് മാറ്റി -->
+                        <div class="doc-header-right">
+                            <div class="doc-title-box">
+                                <h2 id="viewDocTitle">QUOTATION</h2>
+                            </div>
                             <div>
                                 <img id="viewLogo" class="receipt-logo" src="" alt="" style="display: none;">
                             </div>
-                        </div>
-                        <div class="doc-title-box">
-                            <h2 id="viewDocTitle">PRICE QUOTATION</h2>
                         </div>
                     </div>
 
@@ -585,23 +636,26 @@
                             </div>
                         </div>
 
+                        <!-- ⚡ സുബ് ടോട്ടൽ, ഗ്രാൻഡ് ടോട്ടൽ ഫിക്സ് ചെയ്ത ടേബിൾ ലേഔട്ട് -->
                         <div class="calculation-box">
-                            <div class="calc-row">
-                                <td>Sub Total:</td>
-                                <td id="viewSubTotal">0.00</td>
-                            </div>
-                            <div class="calc-row">
-                                <td>Tax (<span id="viewTaxRateText">0</span>%):</td>
-                                <td id="viewTaxAmount">0.00</td>
-                            </div>
-                            <div class="calc-row">
-                                <td>Discount:</td>
-                                <td id="viewDiscountAmount">0.00</td>
-                            </div>
-                            <div class="calc-row grand-total-row">
-                                <td>Grand Total:</td>
-                                <td id="viewGrandTotal">0.00</td>
-                            </div>
+                            <table class="calc-table">
+                                <tr>
+                                    <td>Sub Total:</td>
+                                    <td style="text-align: right;" id="viewSubTotal">0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Tax (<span id="viewTaxRateText">0</span>%):</td>
+                                    <td style="text-align: right;" id="viewTaxAmount">0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Discount:</td>
+                                    <td style="text-align: right;" id="viewDiscountAmount">0.00</td>
+                                </tr>
+                                <tr class="grand-total-row">
+                                    <td>Grand Total:</td>
+                                    <td style="text-align: right;" id="viewGrandTotal">0.00</td>
+                                </tr>
+                            </table>
                         </div>
                     </div>
 
@@ -620,7 +674,9 @@
             <!-- Execution Action Bar -->
             <div class="actions">
                 <button class="btn-whatsapp" onclick="sendWhatsAppDocument()">Send via WhatsApp</button>
-                <button class="btn-print" onclick="handlePrint()">Print / Save PDF</button>
+                <!-- ⚡ ഫയൽ ആയി ഡൗൺലോഡ് ചെയ്യാനുള്ള ഡയറക്ട് ബട്ടൺ -->
+                <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+                <button class="btn-print" onclick="handlePrint()">Print</button>
             </div>
         </div>
     </div>
@@ -653,10 +709,9 @@
         const bankIfsc = document.getElementById('bankIfsc');
         const bankUpi = document.getElementById('bankUpi');
 
-        // Dynamic Field Toggling based on selection
         function toggleDocType() {
             const mode = docType.value;
-            document.getElementById('viewDocTitle').innerText = mode === 'Invoice' ? 'INVOICE' : 'PRICE QUOTATION';
+            document.getElementById('viewDocTitle').innerText = mode === 'Invoice' ? 'INVOICE' : 'QUOTATION';
             document.getElementById('labelNum').innerText = mode === 'Invoice' ? 'Invoice Number' : 'Quotation Number';
             
             if(mode === 'Invoice') {
@@ -677,11 +732,9 @@
             updateLivePreview();
         }
 
-        // Event Setup listeners
         const elementsToListen = [bizName, bizAddress, bizContact, bizTaxNo, docNumber, docDate, docExpiry, docDue, clientName, clientAddress, taxRate, discountAmt, bankName, bankAcc, bankIfsc, bankUpi];
         elementsToListen.forEach(elem => elem.addEventListener('input', updateLivePreview));
 
-        // Logo configuration handler
         document.getElementById('logoInput').addEventListener('change', function() {
             const file = this.files[0];
             const viewLogo = document.getElementById('viewLogo');
@@ -723,7 +776,6 @@
             return `${day}/${months[parseInt(month) - 1]}/${year}`;
         }
 
-        // Live calculation engine and synchronizer
         function updateLivePreview() {
             document.getElementById('viewBizName').innerText = bizName.value || 'COMPANY NAME';
             document.getElementById('viewBizAddress').innerText = bizAddress.value || '';
@@ -739,14 +791,12 @@
             document.getElementById('viewClientAddress').innerText = clientAddress.value || '';
             document.getElementById('viewTerms').innerText = termsInput.value || 'Standard terms apply.';
 
-            // Bank display text formatting
             if(docType.value === 'Invoice' && (bankName.value || bankAcc.value)) {
                 document.getElementById('viewBankData').innerHTML = 
                     `Bank: ${bankName.value.toUpperCase()}<br>Acc No: ${bankAcc.value}<br>IFSC/IBAN: ${bankIfsc.value.toUpperCase()}` +
                     (bankUpi.value ? `<br>UPI ID: ${bankUpi.value}` : '');
             }
 
-            // Calculation loops
             const descs = document.querySelectorAll('.item-desc');
             const qtys = document.querySelectorAll('.item-qty');
             const prices = document.querySelectorAll('.item-price');
@@ -784,7 +834,25 @@
             document.getElementById('viewGrandTotal').innerText = gTotal.toFixed(2);
         }
 
-        // WhatsApp Messenger Formatting Function
+        // ⚡ മൊബൈൽ യൂസർമാർക്ക് വേണ്ടി സിമ്പിൾ ആയി PDF ഡൗൺലോഡ് ചെയ്യാനുള്ള ഫങ്ക്ഷൻ
+        function downloadPDF() {
+            const element = document.getElementById('documentView');
+            const docNo = docNumber.value || 'doc';
+            const type = docType.value.toLowerCase();
+            
+            // PDF പ്രിന്റ് സെറ്റിങ്സ്
+            const opt = {
+                margin:       10,
+                filename:     `${type}_${docNo}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // റൺ ചെയ്യുന്നു
+            html2pdf().set(opt).from(element).save();
+        }
+
         function sendWhatsAppDocument() {
             const phone = clientWhatsapp.value.trim();
             if (!phone) {
@@ -840,7 +908,6 @@
             setTimeout(() => { document.title = originalTitle; }, 100);
         }
 
-        // Initialize view setup
         updateLivePreview();
     </script>
 </body>
