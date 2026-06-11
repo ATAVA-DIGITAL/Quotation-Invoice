@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Invoice & Quotation Generator</title>
+    <style>
+        :root {
+            --primary-color: #2563eb; 
+            --accent-color: #3b82f6;  
+            --bg-color: #f1f5f9;       
+            --text-color: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: var(--text-color);
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+        }
+
+        header {
+            grid-column: span 2;
+            text-align: center;
+            padding: 10px 0 20px 0;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Form Styling */
+        .form-section {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-section h2 {
+            margin-bottom: 20px;
+            color: #1e3a8a;
+            border-bottom: 3px solid #e2e8f0;
+            padding-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f8fafc;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Items Dynamic Row Table */
+        .items-table-input {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        .items-table-input th {
+            padding: 8px;
+            text-align: left;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .items-table-input td {
+            padding: 4px;
+        }
+        .btn-add-row {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn-delete-row {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Preview Styling */
+        .preview-section {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .receipt-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            min-height: 842px; /* A4 Ratio Approximate */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Document Header */
+        .receipt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .biz-details h3 {
+            font-size: 26px;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .biz-details p, .client-details p {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+
+        .doc-title-box {
+            text-align: right;
+        }
+
+        .doc-title-box h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .receipt-logo {
+            max-width: 120px;
+            max-height: 80px;
+            object-fit: contain;
+            margin-top: 10px;
+        }
+
+        /* Info Grid (Dates & Client) */
+        .info-billing-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .client-details h4 {
+            color: #1e3a8a;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .doc-meta-details p {
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #334155;
+        }
+
+        /* Items Preview Table */
+        .preview-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .preview-items-table th {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .preview-items-table td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px;
+            font-size: 13px;
+            color: #334155;
+        }
+        .preview-items-table td:nth-child(1) {
+            text-transform: uppercase;
+        }
+
+        /* Financial Summary Box */
+        .summary-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: auto;
+            padding-top: 15px;
+        }
+
+        .extra-info-box {
+            width: 55%;
+        }
+
+        .bank-details-view, .terms-view {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        .bank-details-view strong, .terms-view strong {
+            color: #334155;
+            text-transform: uppercase;
+        }
+
+        .calculation-box {
+            width: 40%;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .calc-row.grand-total-row {
+            border-top: 2px solid var(--primary-color);
+            border-bottom: 3px double var(--primary-color);
+            font-weight: bold;
+            font-size: 16px;
+            color: #1e3a8a;
+            padding: 10px 0;
+        }
+
+        /* Footer & Sign */
+        .receipt-footer {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+
+        .branding {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .branding span {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .signature-space {
+            text-align: center;
+            width: 160px;
+        }
+        .sig-line {
+            border-top: 1px solid #475569;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        /* Actions Button layout */
+        .actions {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .btn-print {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+        }
+
+        @media (max-width: 1000px) {
+            .container { grid-template-columns: 1fr; }
+            header { grid-column: span 1; }
+            .actions { flex-direction: column; }
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            body { background: #fff !important; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .form-section, header, .actions, .btn-add-row, .btn-delete-row { display: none !important; }
+            .container { display: block; }
+            .preview-section { position: relative; width: 100%; }
+            .receipt-box { box-shadow: none !important; border: none !important; padding: 10px; min-height: auto; }
+            .info-billing-grid { background-color: #f8fafc !important; border-left: 5px solid var(--primary-color) !important; }
+            .preview-items-table th { background-color: #1e3a8a !important; color: white !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Invoice & Quotation Generator</h1>
+            <p>Generate Professional Estimates and Bills Instanty</p>
+        </header>
+
+        <!-- Left Side: Interactive Controls -->
+        <div class="form-section">
+            <h2>Document Settings</h2>
+            
+            <div class="form-group">
+                <label for="docType">Choose Document Type</label>
+                <select id="docType" onchange="toggleDocType()">
+                    <option value="Quotation">PRICE QUOTATION</option>
+                    <option value="Invoice">INVOICE</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="logoInput">Upload Business Logo</label>
+                <input type="file" id="logoInput" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label for="bizName">Your Business Name</label>
+                <input type="text" id="bizName" placeholder="Enter your shop/business name...">
+            </div>
+
+            <div class="form-group">
+                <label for="bizAddress">Business Address</label>
+                <textarea id="bizAddress" rows="2" placeholder="Address, Place, Country..."></textarea>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="bizContact">Contact Number</label>
+                    <input type="text" id="bizContact" placeholder="Phone/Mobile...">
+                </div>
+                <div class="form-group">
+                    <label for="bizTaxNo">Tax / TRN / GST Number (Optional)</label>
+                    <input type="text" id="bizTaxNo" placeholder="Enter registration code...">
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: 1px solid #e2e8f0;">
+            <h2>Client & Tracking Details</h2>
+
+            <div class="row">
+                <div class="form-group">
+                    <label id="labelNum" for="docNumber">Quotation Number</label>
+                    <input type="text" id="docNumber" placeholder="e.g., QT-2026-001">
+                </div>
+                <div class="form-group">
+                    <label for="docDate">Date</label>
+                    <input type="date" id="docDate">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group" id="expiryGroup">
+                    <label for="docExpiry">Valid Until (Expiry Date)</label>
+                    <input type="date" id="docExpiry">
+                </div>
+                <div class="form-group" id="dueGroup" style="display: none;">
+                    <label for="docDue">Payment Due Date</label>
+                    <input type="date" id="docDue">
+                </div>
+                <div class="form-group">
+                    <label for="clientWhatsapp">Client WhatsApp (With Country Code)</label>
+                    <input type="text" id="clientWhatsapp" placeholder="e.g., 919876543210">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="clientName">Client / Company Name</label>
+                <input type="text" id="clientName" placeholder="Recipient name...">
+            </div>
+
+            <div class="form-group">
+                <label for="clientAddress">Client Address</label>
+                <textarea id="clientAddress" rows="2" placeholder="Recipient address & location Details..."></textarea>
+            </div>
+
+            <hr style="margin: 20px 0; border: 1px solid #e2e8f0;">
+            <h2>Line Items</h2>
+
+            <div class="form-group">
+                <table class="items-table-input" id="itemsTableInput">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Description / Service</th>
+                            <th style="width: 15%;">Qty</th>
+                            <th style="width: 20%;">Unit Price</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="inputFieldsContainer">
+                        <tr>
+                            <td><input type="text" class="item-desc" placeholder="Service/Product Description" oninput="updateLivePreview()"></td>
+                            <td><input type="number" class="item-qty" value="1" min="1" oninput="updateLivePreview()"></td>
+                            <td><input type="number" class="item-price" placeholder="0.00" oninput="updateLivePreview()"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn-add-row" onclick="addNewRow()">+ Add Item</button>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="taxRate">Tax / GST / VAT (%)</label>
+                    <input type="number" id="taxRate" value="0" min="0" oninput="updateLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label for="discountAmt">Discount Amount</label>
+                    <input type="number" id="discountAmt" value="0" min="0" oninput="updateLivePreview()">
+                </div>
+            </div>
+
+            <div id="bankDetailsFormSection" style="display: none;">
+                <hr style="margin: 20px 0; border: 1px solid #e2e8f0;">
+                <h2>Bank Transfer Details</h2>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="bankName">Bank Name</label>
+                        <input type="text" id="bankName" placeholder="e.g., Federal Bank">
+                    </div>
+                    <div class="form-group">
+                        <label for="bankAcc">Account Number</label>
+                        <input type="text" id="bankAcc" placeholder="Account no...">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="bankIfsc">IFSC / IBAN Code</label>
+                        <input type="text" id="bankIfsc" placeholder="Sort/IFSC/IBAN...">
+                    </div>
+                    <div class="form-group">
+                        <label for="bankUpi">UPI ID (Optional)</label>
+                        <input type="text" id="bankUpi" placeholder="e.g., name@upi">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="termsInput">Terms & Conditions / Remarks</label>
+                <textarea id="termsInput" rows="2" placeholder="e.g., 50% advance payment required. Delivery within 7 days." oninput="updateLivePreview()"></textarea>
+            </div>
+        </div>
+
+        <!-- Right Side: Live Document Sheet Preview -->
+        <div class="preview-section">
+            <div class="receipt-box" id="documentView">
+                <div>
+                    <!-- Header Section -->
+                    <div class="receipt-header">
+                        <div class="biz-details">
+                            <h3 id="viewBizName">COMPANY NAME</h3>
+                            <p id="viewBizAddress" style="white-space: pre-line; margin-bottom: 5px;"></p>
+                            <p id="viewBizContact">Contact: ------</p>
+                            <p id="viewBizTax" style="font-weight: bold; color: #1e3a8a;"></p>
+                            <div>
+                                <img id="viewLogo" class="receipt-logo" src="" alt="" style="display: none;">
+                            </div>
+                        </div>
+                        <div class="doc-title-box">
+                            <h2 id="viewDocTitle">PRICE QUOTATION</h2>
+                        </div>
+                    </div>
+
+                    <!-- Billing Details & Tracking Grid -->
+                    <div class="info-billing-grid">
+                        <div class="client-details">
+                            <h4>Client / Customer:</h4>
+                            <p id="viewClientName" style="font-weight: bold; color: #0f172a; font-size: 14px;">...................................................</p>
+                            <p id="viewClientAddress" style="white-space: pre-line; margin-top: 5px;"></p>
+                        </div>
+                        <div class="doc-meta-details">
+                            <p><strong>Ref No:</strong> <span id="viewDocNo">---</span></p>
+                            <p><strong>Date:</strong> <span id="viewDocDate">--/---/----</span></p>
+                            <p id="viewExpiryRow"><strong>Valid Until:</strong> <span id="viewDocExpiry">--/---/----</span></p>
+                            <p id="viewDueRow" style="display: none;"><strong>Due Date:</strong> <span id="viewDocDue">--/---/----</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <table class="preview-items-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Item Description</th>
+                                <th style="text-align: center; width: 10%;">Qty</th>
+                                <th style="text-align: right; width: 20%;">Unit Price</th>
+                                <th style="text-align: right; width: 20%;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewItemsContainer">
+                            <!-- Dynamic rows populate here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary Section & Notes -->
+                <div>
+                    <div class="summary-wrapper">
+                        <div class="extra-info-box">
+                            <div class="terms-view">
+                                <strong>Terms & Conditions:</strong>
+                                <p id="viewTerms" style="white-space: pre-line;">Standard terms apply.</p>
+                            </div>
+                            <div class="bank-details-view" id="viewBankDetailsBox" style="display: none;">
+                                <strong style="color: #1e3a8a;">Bank Details for Payment:</strong>
+                                <p id="viewBankData"></p>
+                            </div>
+                        </div>
+
+                        <div class="calculation-box">
+                            <div class="calc-row">
+                                <td>Sub Total:</td>
+                                <td id="viewSubTotal">0.00</td>
+                            </div>
+                            <div class="calc-row">
+                                <td>Tax (<span id="viewTaxRateText">0</span>%):</td>
+                                <td id="viewTaxAmount">0.00</td>
+                            </div>
+                            <div class="calc-row">
+                                <td>Discount:</td>
+                                <td id="viewDiscountAmount">0.00</td>
+                            </div>
+                            <div class="calc-row grand-total-row">
+                                <td>Grand Total:</td>
+                                <td id="viewGrandTotal">0.00</td>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Section -->
+                    <div class="receipt-footer">
+                        <div class="branding">
+                            Generated via <span>ATAVA DST</span>
+                        </div>
+                        <div class="signature-space">
+                            <div class="sig-line">Authorized Signatory</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execution Action Bar -->
+            <div class="actions">
+                <button class="btn-whatsapp" onclick="sendWhatsAppDocument()">Send via WhatsApp</button>
+                <button class="btn-print" onclick="handlePrint()">Print / Save PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set Initial Dates to Default Current
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('docDate').value = todayStr;
+
+        // Form bindings
+        const docType = document.getElementById('docType');
+        const bizName = document.getElementById('bizName');
+        const bizAddress = document.getElementById('bizAddress');
+        const bizContact = document.getElementById('bizContact');
+        const bizTaxNo = document.getElementById('bizTaxNo');
+        const docNumber = document.getElementById('docNumber');
+        const docDate = document.getElementById('docDate');
+        const docExpiry = document.getElementById('docExpiry');
+        const docDue = document.getElementById('docDue');
+        const clientName = document.getElementById('clientName');
+        const clientAddress = document.getElementById('clientAddress');
+        const clientWhatsapp = document.getElementById('clientWhatsapp');
+        const taxRate = document.getElementById('taxRate');
+        const discountAmt = document.getElementById('discountAmt');
+        const termsInput = document.getElementById('termsInput');
+        
+        // Bank bindings
+        const bankName = document.getElementById('bankName');
+        const bankAcc = document.getElementById('bankAcc');
+        const bankIfsc = document.getElementById('bankIfsc');
+        const bankUpi = document.getElementById('bankUpi');
+
+        // Dynamic Field Toggling based on selection
+        function toggleDocType() {
+            const mode = docType.value;
+            document.getElementById('viewDocTitle').innerText = mode === 'Invoice' ? 'INVOICE' : 'PRICE QUOTATION';
+            document.getElementById('labelNum').innerText = mode === 'Invoice' ? 'Invoice Number' : 'Quotation Number';
+            
+            if(mode === 'Invoice') {
+                document.getElementById('expiryGroup').style.display = 'none';
+                document.getElementById('viewExpiryRow').style.display = 'none';
+                document.getElementById('dueGroup').style.display = 'block';
+                document.getElementById('viewDueRow').style.display = 'block';
+                document.getElementById('bankDetailsFormSection').style.display = 'block';
+                document.getElementById('viewBankDetailsBox').style.display = 'block';
+            } else {
+                document.getElementById('expiryGroup').style.display = 'block';
+                document.getElementById('viewExpiryRow').style.display = 'block';
+                document.getElementById('dueGroup').style.display = 'none';
+                document.getElementById('viewDueRow').style.display = 'none';
+                document.getElementById('bankDetailsFormSection').style.display = 'none';
+                document.getElementById('viewBankDetailsBox').style.display = 'none';
+            }
+            updateLivePreview();
+        }
+
+        // Event Setup listeners
+        const elementsToListen = [bizName, bizAddress, bizContact, bizTaxNo, docNumber, docDate, docExpiry, docDue, clientName, clientAddress, taxRate, discountAmt, bankName, bankAcc, bankIfsc, bankUpi];
+        elementsToListen.forEach(elem => elem.addEventListener('input', updateLivePreview));
+
+        // Logo configuration handler
+        document.getElementById('logoInput').addEventListener('change', function() {
+            const file = this.files[0];
+            const viewLogo = document.getElementById('viewLogo');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    viewLogo.src = e.target.result;
+                    viewLogo.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                viewLogo.style.display = 'none';
+                viewLogo.src = '';
+            }
+        });
+
+        function addNewRow() {
+            const container = document.getElementById('inputFieldsContainer');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="item-desc" placeholder="Next item/service" oninput="updateLivePreview()"></td>
+                <td><input type="number" class="item-qty" value="1" min="1" oninput="updateLivePreview()"></td>
+                <td><input type="number" class="item-price" placeholder="0.00" oninput="updateLivePreview()"></td>
+                <td><button type="button" class="btn-delete-row" onclick="deleteRow(this)">X</button></td>
+            `;
+            container.appendChild(tr);
+            updateLivePreview();
+        }
+
+        function deleteRow(btn) {
+            btn.closest('tr').remove();
+            updateLivePreview();
+        }
+
+        function formatCustomDate(dateStr) {
+            if(!dateStr) return '--/---/----';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${months[parseInt(month) - 1]}/${year}`;
+        }
+
+        // Live calculation engine and synchronizer
+        function updateLivePreview() {
+            document.getElementById('viewBizName').innerText = bizName.value || 'COMPANY NAME';
+            document.getElementById('viewBizAddress').innerText = bizAddress.value || '';
+            document.getElementById('viewBizContact').innerText = bizContact.value ? "Contact: " + bizContact.value : "Contact: ------";
+            document.getElementById('viewBizTax').innerText = bizTaxNo.value ? "TRN/TAX: " + bizTaxNo.value : "";
+            
+            document.getElementById('viewDocNo').innerText = docNumber.value || '---';
+            document.getElementById('viewDocDate').innerText = formatCustomDate(docDate.value);
+            document.getElementById('viewDocExpiry').innerText = formatCustomDate(docExpiry.value);
+            document.getElementById('viewDocDue').innerText = formatCustomDate(docDue.value);
+
+            document.getElementById('viewClientName').innerText = clientName.value || '...................................................';
+            document.getElementById('viewClientAddress').innerText = clientAddress.value || '';
+            document.getElementById('viewTerms').innerText = termsInput.value || 'Standard terms apply.';
+
+            // Bank display text formatting
+            if(docType.value === 'Invoice' && (bankName.value || bankAcc.value)) {
+                document.getElementById('viewBankData').innerHTML = 
+                    `Bank: ${bankName.value.toUpperCase()}<br>Acc No: ${bankAcc.value}<br>IFSC/IBAN: ${bankIfsc.value.toUpperCase()}` +
+                    (bankUpi.value ? `<br>UPI ID: ${bankUpi.value}` : '');
+            }
+
+            // Calculation loops
+            const descs = document.querySelectorAll('.item-desc');
+            const qtys = document.querySelectorAll('.item-qty');
+            const prices = document.querySelectorAll('.item-price');
+            const previewContainer = document.getElementById('previewItemsContainer');
+            
+            previewContainer.innerHTML = '';
+            let subTotal = 0;
+
+            descs.forEach((input, idx) => {
+                const descText = input.value || '...................................................';
+                const qtyVal = parseInt(qtys[idx].value) || 1;
+                const priceVal = parseFloat(prices[idx].value) || 0;
+                const rowTotal = qtyVal * priceVal;
+                subTotal += rowTotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${descText}</td>
+                    <td style="text-align: center;">${qtyVal}</td>
+                    <td style="text-align: right;">${priceVal.toFixed(2)}</td>
+                    <td style="text-align: right;">${rowTotal.toFixed(2)}</td>
+                `;
+                previewContainer.appendChild(tr);
+            });
+
+            const tRate = parseFloat(taxRate.value) || 0;
+            const tAmount = (subTotal * tRate) / 100;
+            const dAmount = parseFloat(discountAmt.value) || 0;
+            const gTotal = (subTotal + tAmount) - dAmount;
+
+            document.getElementById('viewSubTotal').innerText = subTotal.toFixed(2);
+            document.getElementById('viewTaxRateText').innerText = tRate;
+            document.getElementById('viewTaxAmount').innerText = tAmount.toFixed(2);
+            document.getElementById('viewDiscountAmount').innerText = dAmount.toFixed(2);
+            document.getElementById('viewGrandTotal').innerText = gTotal.toFixed(2);
+        }
+
+        // WhatsApp Messenger Formatting Function
+        function sendWhatsAppDocument() {
+            const phone = clientWhatsapp.value.trim();
+            if (!phone) {
+                alert("Please enter the Client's WhatsApp Number first!");
+                return;
+            }
+
+            const mode = docType.value.toUpperCase();
+            const bName = (bizName.value || 'Our Company').toUpperCase();
+            const cName = (clientName.value || 'Client').toUpperCase();
+            const dNo = docNumber.value || '---';
+            const dDate = formatCustomDate(docDate.value);
+            const total = document.getElementById('viewGrandTotal').innerText;
+
+            const descs = document.querySelectorAll('.item-desc');
+            const qtys = document.querySelectorAll('.item-qty');
+            const prices = document.querySelectorAll('.item-price');
+            let itemLines = '';
+
+            descs.forEach((input, idx) => {
+                const d = input.value || 'Service';
+                const q = qtys[idx].value;
+                const p = parseFloat(prices[idx].value) || 0;
+                itemLines += `▪️ ${d.toUpperCase()} (x${q}) - ${p.toFixed(2)}\n`;
+            });
+
+            let msg = `*${mode} FROM ${bName}*\n` +
+                      `----------------------------------\n` +
+                      `🧾 *Ref No:* ${dNo}\n` +
+                      `📅 *Date:* ${dDate}\n`;
+            
+            if(docType.value === 'Quotation') {
+                msg += `⏳ *Valid Until:* ${formatCustomDate(docExpiry.value)}\n`;
+            } else {
+                msg += `🛑 *Due Date:* ${formatCustomDate(docDue.value)}\n`;
+            }
+
+            msg += `----------------------------------\n` +
+                   `👤 *To:* ${cName}\n` +
+                   `----------------------------------\n` +
+                   `*PARTICULARS:*\n${itemLines}` +
+                   `----------------------------------\n` +
+                   `💰 *GRAND TOTAL:  ${total}*\n\n` +
+                   `💬 _Please reply for confirmation or changes. Thank you!_`;
+
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function handlePrint() {
+            const originalTitle = document.title;
+            document.title = "";
+            window.print();
+            setTimeout(() => { document.title = originalTitle; }, 100);
+        }
+
+        // Initialize view setup
+        updateLivePreview();
+    </script>
+</body>
+</html>
