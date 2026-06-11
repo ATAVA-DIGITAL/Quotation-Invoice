@@ -292,7 +292,7 @@
             width: 40%;
         }
 
-        /* ⚡ ഇവിടെ ടേബിൾ ആക്കിയതുകൊണ്ട് Subtotal / Grandtotal എല്ലാം കൃത്യമായി കാണാം */
+        /* ⚡ സബ് ടോട്ടൽ, ഗ്രാൻഡ് ടോട്ടൽ ലേഔട്ട് ടേബിൾ */
         .calc-table {
             width: 100%;
             border-collapse: collapse;
@@ -379,7 +379,7 @@
             transition: all 0.3s;
         }
 
-        /* ⚡ പുതിയ PDF ഡൗൺലോഡ് ബട്ടൺ സ്റ്റൈൽ */
+        /* ⚡ PDF ഡൗൺലോഡ് ബട്ടൺ */
         .btn-pdf {
             background: #e11d48;
             color: white;
@@ -564,7 +564,7 @@
 
             <div class="form-group">
                 <label for="termsInput">Terms & Conditions / Remarks</label>
-                <textarea id="termsInput" rows="2" placeholder="e.g., 50% advance payment required. Delivery within 7 days." oninput="updateLivePreview()"></textarea>
+                <textarea id="termsInput" rows="2" placeholder="Leave blank to use default appreciation message..." oninput="updateLivePreview()"></textarea>
             </div>
         </div>
 
@@ -627,8 +627,8 @@
                     <div class="summary-wrapper">
                         <div class="extra-info-box">
                             <div class="terms-view">
-                                <strong>Terms & Conditions:</strong>
-                                <p id="viewTerms" style="white-space: pre-line;">Standard terms apply.</p>
+                                <strong>Notes / Remarks:</strong>
+                                <p id="viewTerms" style="white-space: pre-line; color: #334155; font-style: italic;"></p>
                             </div>
                             <div class="bank-details-view" id="viewBankDetailsBox" style="display: none;">
                                 <strong style="color: #1e3a8a;">Bank Details for Payment:</strong>
@@ -636,7 +636,7 @@
                             </div>
                         </div>
 
-                        <!-- ⚡ സുബ് ടോട്ടൽ, ഗ്രാൻഡ് ടോട്ടൽ ഫിക്സ് ചെയ്ത ടേബിൾ ലേഔട്ട് -->
+                        <!-- സുബ് ടോട്ടൽ, ഗ്രാൻഡ് ടോട്ടൽ ടേബിൾ ലേഔട്ട് -->
                         <div class="calculation-box">
                             <table class="calc-table">
                                 <tr>
@@ -674,7 +674,6 @@
             <!-- Execution Action Bar -->
             <div class="actions">
                 <button class="btn-whatsapp" onclick="sendWhatsAppDocument()">Send via WhatsApp</button>
-                <!-- ⚡ ഫയൽ ആയി ഡൗൺലോഡ് ചെയ്യാനുള്ള ഡയറക്ട് ബട്ടൺ -->
                 <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
                 <button class="btn-print" onclick="handlePrint()">Print</button>
             </div>
@@ -682,11 +681,12 @@
     </div>
 
     <script>
-        // Set Initial Dates to Default Current
+        // ⚡ സ്ഥിരമായി കിടക്കാനുള്ള ഇംഗ്ലീഷ് സോപ്പിംഗ് ഡയലോഗ്
+        const defaultAppreciationMsg = "It is an absolute pleasure serving a customer like you. We sincerely appreciate your business and look forward to your continued support!";
+
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('docDate').value = todayStr;
 
-        // Form bindings
         const docType = document.getElementById('docType');
         const bizName = document.getElementById('bizName');
         const bizAddress = document.getElementById('bizAddress');
@@ -703,7 +703,6 @@
         const discountAmt = document.getElementById('discountAmt');
         const termsInput = document.getElementById('termsInput');
         
-        // Bank bindings
         const bankName = document.getElementById('bankName');
         const bankAcc = document.getElementById('bankAcc');
         const bankIfsc = document.getElementById('bankIfsc');
@@ -732,7 +731,7 @@
             updateLivePreview();
         }
 
-        const elementsToListen = [bizName, bizAddress, bizContact, bizTaxNo, docNumber, docDate, docExpiry, docDue, clientName, clientAddress, taxRate, discountAmt, bankName, bankAcc, bankIfsc, bankUpi];
+        const elementsToListen = [bizName, bizAddress, bizContact, bizTaxNo, docNumber, docDate, docExpiry, docDue, clientName, clientAddress, taxRate, discountAmt, bankName, bankAcc, bankIfsc, bankUpi, termsInput];
         elementsToListen.forEach(elem => elem.addEventListener('input', updateLivePreview));
 
         document.getElementById('logoInput').addEventListener('change', function() {
@@ -789,7 +788,9 @@
 
             document.getElementById('viewClientName').innerText = clientName.value || '...................................................';
             document.getElementById('viewClientAddress').innerText = clientAddress.value || '';
-            document.getElementById('viewTerms').innerText = termsInput.value || 'Standard terms apply.';
+            
+            // ⚡ ടൈപ്പ് ചെയ്തിട്ടില്ലെങ്കിൽ ഡീഫോൾട്ട് സോപ്പിംഗ് മെസ്സേജ് കാണിക്കും
+            document.getElementById('viewTerms').innerText = termsInput.value || defaultAppreciationMsg;
 
             if(docType.value === 'Invoice' && (bankName.value || bankAcc.value)) {
                 document.getElementById('viewBankData').innerHTML = 
@@ -834,13 +835,12 @@
             document.getElementById('viewGrandTotal').innerText = gTotal.toFixed(2);
         }
 
-        // ⚡ മൊബൈൽ യൂസർമാർക്ക് വേണ്ടി സിമ്പിൾ ആയി PDF ഡൗൺലോഡ് ചെയ്യാനുള്ള ഫങ്ക്ഷൻ
+        // ⚡ മൊബൈൽ പിഡിഎഫ് ജനറേറ്റർ എഞ്ചിൻ
         function downloadPDF() {
             const element = document.getElementById('documentView');
             const docNo = docNumber.value || 'doc';
             const type = docType.value.toLowerCase();
             
-            // PDF പ്രിന്റ് സെറ്റിങ്സ്
             const opt = {
                 margin:       10,
                 filename:     `${type}_${docNo}.pdf`,
@@ -849,7 +849,6 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // റൺ ചെയ്യുന്നു
             html2pdf().set(opt).from(element).save();
         }
 
@@ -866,6 +865,7 @@
             const dNo = docNumber.value || '---';
             const dDate = formatCustomDate(docDate.value);
             const total = document.getElementById('viewGrandTotal').innerText;
+            const remarks = termsInput.value || defaultAppreciationMsg;
 
             const descs = document.querySelectorAll('.item-desc');
             const qtys = document.querySelectorAll('.item-qty');
@@ -896,6 +896,7 @@
                    `*PARTICULARS:*\n${itemLines}` +
                    `----------------------------------\n` +
                    `💰 *GRAND TOTAL:  ${total}*\n\n` +
+                   `📝 _${remarks}_\n\n` +
                    `💬 _Please reply for confirmation or changes. Thank you!_`;
 
             window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
